@@ -1,0 +1,194 @@
+// ============================================
+// StudyOS — Database Layer (IndexedDB)
+// ============================================
+
+const DB = (() => {
+  const DB_NAME = 'StudyOSDB';
+  const DB_VERSION = 1;
+  let db = null;
+
+  const STORES = {
+    PROFILE: 'profile',
+    ACTIVITIES: 'activities',
+    TASKS: 'tasks',
+    GOALS: 'goals',
+    SUBJECTS: 'subjects',
+    STREAKS: 'streaks',
+    PLANS: 'plans',
+    LOGS: 'logs'
+  };
+
+  function open() {
+    return new Promise((resolve, reject) => {
+      if (db) return resolve(db);
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+
+      req.onupgradeneeded = (e) => {
+        const d = e.target.result;
+
+        // Profile store
+        if (!d.objectStoreNames.contains(STORES.PROFILE)) {
+          d.createObjectStore(STORES.PROFILE, { keyPath: 'key' });
+        }
+        // Activities store
+        if (!d.objectStoreNames.contains(STORES.ACTIVITIES)) {
+          const act = d.createObjectStore(STORES.ACTIVITIES, { keyPath: 'id', autoIncrement: true });
+          act.createIndex('date', 'date', { unique: false });
+          act.createIndex('type', 'type', { unique: false });
+        }
+        // Tasks store
+        if (!d.objectStoreNames.contains(STORES.TASKS)) {
+          const tasks = d.createObjectStore(STORES.TASKS, { keyPath: 'id', autoIncrement: true });
+          tasks.createIndex('date', 'date', { unique: false });
+          tasks.createIndex('completed', 'completed', { unique: false });
+        }
+        // Goals store
+        if (!d.objectStoreNames.contains(STORES.GOALS)) {
+          const goals = d.createObjectStore(STORES.GOALS, { keyPath: 'id', autoIncrement: true });
+          goals.createIndex('type', 'type', { unique: false });
+        }
+        // Subjects store
+        if (!d.objectStoreNames.contains(STORES.SUBJECTS)) {
+          d.createObjectStore(STORES.SUBJECTS, { keyPath: 'name' });
+        }
+        // Streaks store
+        if (!d.objectStoreNames.contains(STORES.STREAKS)) {
+          d.createObjectStore(STORES.STREAKS, { keyPath: 'type' });
+        }
+        // Plans store
+        if (!d.objectStoreNames.contains(STORES.PLANS)) {
+          d.createObjectStore(STORES.PLANS, { keyPath: 'date' });
+        }
+        // Logs store
+        if (!d.objectStoreNames.contains(STORES.LOGS)) {
+          const logs = d.createObjectStore(STORES.LOGS, { keyPath: 'id', autoIncrement: true });
+          logs.createIndex('date', 'date', { unique: false });
+        }
+      };
+
+      req.onsuccess = (e) => { db = e.target.result; resolve(db); };
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  function transaction(storeName, mode = 'readonly') {
+    return db.transaction(storeName, mode).objectStore(storeName);
+  }
+
+  // Generic CRUD
+  async function get(store, key) {
+    await open();
+    return new Promise((res, rej) => {
+      const req = transaction(store).get(key);
+      req.onsuccess = () => res(req.result);
+      req.onerror = () => rej(req.error);
+    });
+  }
+
+  async function getAll(store, indexName, query) {
+    await open();
+    return new Promise((res, rej) => {
+      const store_ = transaction(store);
+      const req = indexName ? store_.index(indexName).getAll(query) : store_.getAll();
+      req.onsuccess = () => res(req.result);
+      req.onerror = () => rej(req.error);
+    });
+  }
+
+  async function put(store, data) {
+    await open();
+    return new Promise((res, rej) => {
+      const req = transaction(store, 'readwrite').put(data);
+      req.onsuccess = () => res(req.result);
+      req.onerror = () => rej(req.error);
+    });
+  }
+
+  async function add(store, data) {
+    await open();
+    return new Promise((res, rej) => {
+      const req = transaction(store, 'readwrite').add(data);
+      req.onsuccess = () => res(req.result);
+      req.onerror = () => rej(req.error);
+    });
+  }
+
+  async function del(store, key) {
+    await open();
+    return new Promise((res, rej) => {
+      const req = transaction(store, 'readwrite').delete(key);
+      req.onsuccess = () => res();
+      req.onerror = () => rej(req.error);
+    });
+  }
+
+  // Profile helpers
+  async function getProfile() {
+    const p = await get(STORES.PROFILE, 'main');
+    return p ? p.data : null;
+  }
+
+  async function saveProfile(data) {
+    return put(STORES.PROFILE, { key: 'main', data });
+  }
+
+  // Today's date string
+  function today() {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  // Get today's activities
+  async function getTodayActivities() {
+    return getAll(STORES.ACTIVITIES, 'date', today());
+  }
+
+  // Get today's tasks
+  async function getTodayTasks() {
+    return getAll(STORES.TASKS, 'date', today());
+  }
+
+  // Get activities for last N days
+  async function getActivitiesRange(days) {
+    await open();
+    const all = await getAll(STORES.ACTIVITIES);
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    return all.filter(a => new Date(a.timestamp) >= cutoff);
+  }
+
+  // Subjects
+  async function getSubjects() {
+    return getAll(STORES.SUBJECTS);
+  }
+
+  async function saveSubject(subj) {
+    return put(STORES.SUBJECTS, subj);
+  }
+
+  // Streaks
+  async function getStreak(type) {
+    return get(STORES.STREAKS, type);
+  }
+
+  async function updateStreak(type, count, lastDate) {
+    return put(STORES.STREAKS, { type, count, lastDate });
+  }
+
+  // Plans
+  async function getTodayPlan() {
+    return get(STORES.PLANS, today());
+  }
+
+  async function savePlan(planText) {
+    return put(STORES.PLANS, { date: today(), plan: planText, created: Date.now() });
+  }
+
+  return {
+    open, get, getAll, put, add, del,
+    getProfile, saveProfile, today,
+    getTodayActivities, getTodayTasks,
+    getActivitiesRange, getSubjects, saveSubject,
+    getStreak, updateStreak, getTodayPlan, savePlan,
+    STORES
+  };
+})();
