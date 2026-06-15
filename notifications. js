@@ -1,0 +1,74 @@
+// ============================================
+// StudyOS — Notifications & Toasts
+// ============================================
+
+const Notify = (() => {
+  // Create toast container
+  let container;
+
+  function init() {
+    container = document.createElement('div');
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+
+  function show(message, type = 'info', duration = 4000) {
+    if (!container) init();
+
+    const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<span>${icons[type]}</span><span>${message}</span>`;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.animation = 'slideInRight 0.3s ease reverse';
+      setTimeout(() => toast.remove(), 280);
+    }, duration);
+
+    return toast;
+  }
+
+  // Browser notification (if permitted)
+  async function requestPermission() {
+    if ('Notification' in window && Notification.permission === 'default') {
+      await Notification.requestPermission();
+    }
+  }
+
+  function push(title, body, icon = '🧠') {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(title, { body, icon: '🧠' });
+    }
+  }
+
+  // Schedule reminders
+  const reminders = [];
+
+  function scheduleReminder(message, hour, minute) {
+    const checkInterval = setInterval(() => {
+      const now = new Date();
+      if (now.getHours() === hour && now.getMinutes() === minute) {
+        show(message, 'info', 6000);
+        push('StudyOS Reminder', message);
+        clearInterval(checkInterval);
+      }
+    }, 30000); // Check every 30 seconds
+    reminders.push(checkInterval);
+  }
+
+  function setupDailyReminders() {
+    // Study reminders
+    scheduleReminder('📚 Time to start your post-college study session!', 17, 0);
+    scheduleReminder('🧮 30 minutes of aptitude practice before dinner!', 19, 0);
+    scheduleReminder('💻 Evening DSA session — solve one problem!', 20, 30);
+    scheduleReminder('📝 Review your notes before sleeping.', 22, 0);
+    scheduleReminder('😴 Wind down — good sleep = better retention!', 23, 0);
+  }
+
+  function clearAll() {
+    reminders.forEach(r => clearInterval(r));
+  }
+
+  return { init, show, push, requestPermission, scheduleReminder, setupDailyReminders, clearAll };
+})();
