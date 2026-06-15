@@ -1,0 +1,164 @@
+// ============================================
+// StudyOS — AI Integration (Google Gemini)
+// ============================================
+
+const AI = (() => {
+  const GEMINI_URL = '[generativelanguage.googleapis.com](https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent)';
+
+  function getApiKey() {
+    const profile = JSON.parse(localStorage.getItem('studyos_profile') || '{}');
+    return profile.apiKey || '';
+  }
+
+  async function generate(prompt, maxTokens = 800) {
+    const key = getApiKey();
+    if (!key) return null;
+
+    try {
+      const res = await fetch(`${GEMINI_URL}?key=${key}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            maxOutputTokens: maxTokens,
+            temperature: 0.7,
+            topP: 0.9
+          }
+        })
+      });
+
+      if (!res.ok) {
+        console.error('Gemini API error:', res.status);
+        return null;
+      }
+
+      const data = await res.json();
+      return data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+    } catch (err) {
+      console.error('AI request failed:', err);
+      return null;
+    }
+  }
+
+  // Generate personalized daily study plan
+  async function generateDailyPlan(profile, todayStats, subjects) {
+    const subjectProgress = subjects.map(s => `${s.name}: ${s.progress}%`).join(', ');
+    const prompt = `You are an AI study assistant for a Diploma Computer Engineering student named ${profile.name} preparing for campus placements and ECET exam.
+
+Student Profile:
+- Semester: ${profile.semester}
+- College hours: 9:30 AM to 4:00 PM
+- Daily study goal: ${profile.studyGoal} hours
+- Subjects: ${subjectProgress}
+
+Today's Stats So Far:
+- Study time logged: ${todayStats.studyMins} minutes
+- Tasks completed: ${todayStats.completedTasks}/${todayStats.totalTasks}
+
+Generate a concise, personalized study plan for today with 5-7 specific time-blocked tasks. Focus on:
+1. Placement prep (Java, DSA, SQL, Aptitude, English)
+2. ECET prep (if relevant)
+3. Project work
+4. Balance weak subjects more
+
+Format each item as: [TIME] - [TASK] - [DURATION]
+Keep it practical and motivating. Max 200 words.`;
+
+    return generate(prompt, 400);
+  }
+
+  // Get smart next-task recommendation
+  async function getRecommendation(profile, activities, subjects, tasks) {
+    const pending = tasks.filter(t => !t.completed).map(t => t.name).join(', ');
+    const weakSubjects = subjects
+      .filter(s => s.progress < 50)
+      .map(s => s.name)
+      .join(', ');
+
+    const prompt = `A Diploma Computer Engineering student (${profile.name}) is preparing for placements and ECET.
+
+Weak subjects: ${weakSubjects || 'None identified yet'}
+Pending tasks: ${pending || 'None'}
+Time of day: ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+
+Based on this, recommend the SINGLE BEST next task to work on right now. Give:
+1. What to study (be specific)
+2. Why (1 sentence)
+3. Quick tip to get started
+
+Keep under 80 words. Be direct and encouraging.`;
+
+    return generate(prompt, 200);
+  }
+
+  // Analyze procrastination
+  async function analyzeProcrastination(profile, idleMinutes, lastActivity) {
+    const prompt = `A student named ${profile.name} hasn't logged any productive activity for ${idleMinutes} minutes. Last activity: ${lastActivity || 'None today'}.
+
+Generate a SHORT, friendly (not preachy) procrastination intervention in under 50 words. Include one specific micro-action to restart focus immediately. Be motivational, not guilt-inducing.`;
+
+    return generate(prompt, 150);
+  }
+
+  // Generate motivational quote
+  async function getMotivationalQuote(profile, productivity) {
+    const mood = productivity > 70 ? 'high-performing' : productivity > 40 ? 'moderate' : 'struggling';
+    const prompt = `Generate one short, powerful motivational quote (under 25 words) for a ${mood} engineering student preparing for placements. Make it specific to the context, not generic. No attribution needed.`;
+    return generate(prompt, 60);
+  }
+
+  // Analyze strengths and weaknesses
+  async function analyzeStrengthsWeaknesses(subjects, activities7Days) {
+    const subjectData = subjects.map(s => `${s.name}: ${s.progress}%, study time: ${s.studyMinutes || 0} mins`).join('\n');
+    const prompt = `Analyze this student's performance:
+
+${subjectData}
+
+Provide a brief analysis (under 120 words):
+1. Top 2 strengths
+2. Top 2 areas needing improvement
+3. One specific actionable recommendation
+
+Format clearly with emoji bullets. Be constructive.`;
+
+    return generate(prompt, 250);
+  }
+
+  // Generate placement study topics
+  async function getPlacementTopics(subject, progress) {
+    const prompt = `For a Diploma Computer Engineering student at ${progress}% progress in ${subject}:
+
+List the top 5 most important topics to study RIGHT NOW for campus placements. For each topic, give one specific practice suggestion. Keep it under 150 words. Format as numbered list.`;
+    return generate(prompt, 300);
+  }
+
+  // Generate ECET study topics
+  async function getECETTopics(subject) {
+    const prompt = `For ECET (Engineering Common Entrance Test) preparation in ${subject}, list the 5 most important chapters/topics to focus on. Include typical question types. Under 150 words. Numbered list format.`;
+    return generate(prompt, 300);
+  }
+
+  // Fallback motivational quotes (offline)
+  const fallbackQuotes = [
+    "Every hour you study today is an investment that pays dividends on placement day. 💼",
+    "The gap between where you are and where you want to be is bridged by consistent action. 🌉",
+    "Placements don't reward talent — they reward preparation. You're building yours right now. 🏆",
+    "Your future self is watching you right now. Make them proud. 🔮",
+    "One more problem solved today = one less obstacle on placement day. ⚡",
+    "ECET toppers weren't born smart. They just started earlier and quit later. 🎯",
+    "Code, review, repeat. Every iteration makes you sharper. 💻",
+    "The recruiter doesn't care about your luck. They care about your skills. Build them. 📈"
+  ];
+
+  function getFallbackQuote() {
+    return fallbackQuotes[Math.floor(Math.random() * fallbackQuotes.length)];
+  }
+
+  return {
+    generate, generateDailyPlan, getRecommendation,
+    analyzeProcrastination, getMotivationalQuote,
+    analyzeStrengthsWeaknesses, getPlacementTopics,
+    getECETTopics, getFallbackQuote
+  };
+})();
