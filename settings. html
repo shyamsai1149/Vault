@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyOS — Settings</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link href="[fonts.googleapis.com](https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap)" rel="stylesheet" />
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span class="logo-icon">🧠</span><span class="logo-text">StudyOS</span></div>
+    <nav class="sidebar-nav">
+      <a href="index.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Dashboard</span></a>
+      <a href="study.html" class="nav-item"><span class="nav-icon">📚</span><span class="nav-label">Study Tracker</span></a>
+      <a href="goals.html" class="nav-item"><span class="nav-icon">🎯</span><span class="nav-label">Goals & Tasks</span></a>
+      <a href="reports.html" class="nav-item"><span class="nav-icon">📊</span><span class="nav-label">Reports</span></a>
+      <a href="settings.html" class="nav-item active"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></a>
+    </nav>
+    <div class="sidebar-footer"><div class="streak-badge"><span id="sidebar-streak">🔥 0 day streak</span></div></div>
+  </aside>
+  <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+
+  <main class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="page-title">Settings</h1>
+        <p class="page-subtitle">Profile, preferences, and AI configuration</p>
+      </div>
+    </header>
+
+    <!-- Profile Settings -->
+    <div class="settings-section">
+      <h3>👤 Profile</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="form-group"><label>Full Name</label><input type="text" id="sName" class="input-field" /></div>
+        <div class="form-group"><label>College</label><input type="text" id="sCollege" class="input-field" /></div>
+        <div class="form-group">
+          <label>Semester</label>
+          <select id="sSemester" class="input-field">
+            <option value="3">3rd</option><option value="4">4th</option>
+            <option value="5">5th</option><option value="6">6th</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Graduation Year</label><input type="number" id="sGradYear" class="input-field" value="2026" /></div>
+      </div>
+    </div>
+
+    <!-- AI Settings -->
+    <div class="settings-section">
+      <h3>🤖 AI Configuration (Google Gemini)</h3>
+      <div class="form-group">
+        <label>Gemini API Key</label>
+        <input type="password" id="sApiKey" class="input-field" placeholder="AIza..." />
+        <small class="hint">Get your free API key at <a href="[aistudio.google.com](https://aistudio.google.com)" target="_blank">aistudio.google.com</a> — it's free with generous limits.</small>
+      </div>
+      <button class="btn-sm" id="testApiBtn" style="margin-top:8px">🧪 Test API Key</button>
+      <span id="apiTestResult" style="font-size:12px;margin-left:10px"></span>
+    </div>
+
+    <!-- Study Goals -->
+    <div class="settings-section">
+      <h3>🎯 Daily Goals</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="form-group">
+          <label>Daily Study Goal (hours)</label>
+          <input type="number" id="sStudyGoal" class="input-field" min="1" max="12" />
+        </div>
+        <div class="form-group">
+          <label>Mobile Limit (hours)</label>
+          <input type="number" id="sMobileLimit" class="input-field" min="0" max="8" />
+        </div>
+        <div class="form-group">
+          <label>Sleep Goal (hours)</label>
+          <input type="number" id="sSleepGoal" class="input-field" value="7.5" min="5" max="10" />
+        </div>
+        <div class="form-group">
+          <label>Exercise Goal (minutes/day)</label>
+          <input type="number" id="sExerciseGoal" class="input-field" value="30" min="0" max="120" />
+        </div>
+      </div>
+    </div>
+
+    <!-- ECET Settings -->
+    <div class="settings-section">
+      <h3>📐 ECET Preparation</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="form-group">
+          <label>ECET Exam Date</label>
+          <input type="date" id="sEcetDate" class="input-field" />
+        </div>
+        <div class="form-group">
+          <label>Target Score</label>
+          <input type="number" id="sEcetScore" class="input-field" placeholder="e.g. 90" />
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:12px">
+        <label>Weak Topics (comma separated)</label>
+        <input type="text" id="sWeakTopics" class="input-field" placeholder="e.g. Calculus, Digital Electronics, Thermodynamics" />
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="settings-section">
+      <h3>🔔 Notifications</h3>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;font-size:14px">
+          <input type="checkbox" id="notifStudy" checked style="width:16px;height:16px;accent-color:#3b82f6" />
+          Study reminders (5 PM, 7:30 PM, 9 PM)
+        </label>
+        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;font-size:14px">
+          <input type="checkbox" id="notifSleep" checked style="width:16px;height:16px;accent-color:#3b82f6" />
+          Sleep reminder (11 PM)
+        </label>
+        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;font-size:14px">
+          <input type="checkbox" id="notifMobile" checked style="width:16px;height:16px;accent-color:#3b82f6" />
+          Mobile usage alerts
+        </label>
+      </div>
+    </div>
+
+    <!-- Data Management -->
+    <div class="settings-section">
+      <h3>🗄️ Data Management</h3>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn-primary" id="saveAllSettings">💾 Save All Settings</button>
+        <button class="btn-sm" id="exportDataBtn" style="padding:10px 16px">📤 Export Data</button>
+        <button class="btn-sm" id="clearDataBtn" style="padding:10px 16px;color:#ef4444;border-color:#ef4444">🗑️ Clear All Data</button>
+      </div>
+    </div>
+
+    <!-- App Info -->
+    <div class="settings-section" style="text-align:center">
+      <div style="font-size:32px;margin-bottom:8px">🧠</div>
+      <div style="font-size:18px;font-weight:800;background:linear-gradient(135deg,#3b82f6,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent">StudyOS v1.0</div>
+      <div style="font-size:13px;color:#64748b;margin-top:6px">AI-Powered Productivity Assistant for Engineering Students</div>
+      <div style="font-size:12px;color:#475569;margin-top:4px">Built with HTML, CSS, JS + Gemini AI • Stores data locally (IndexedDB)</div>
+    </div>
+  </main>
+
+  <script src="assets/js/db.js"></script>
+  <script src="assets/js/ai.js"></script>
+  <script src="assets/js/notifications.js"></script>
+  <script>
+    Notify.init();
+
+    async function loadSettings() {
+      await DB.open();
+      const profile = JSON.parse(localStorage.getItem('studyos_profile') || '{}');
+      if (!profile.name) return;
+
+      document.getElementById('sName').value = profile.name || '';
+      document.getElementById('sCollege').value = profile.college || '';
+      document.getElementById('sSemester').value = profile.semester || '5';
+      document.getElementById('sApiKey').value = profile.apiKey || '';
+      document.getElementById('sStudyGoal').value = profile.studyGoal || 6;
+      document.getElementById('sMobileLimit').value = profile.mobileLimit || 2;
+      document.getElementById('sGradYear').value = profile.gradYear || 2026;
+
+      const streak = await DB.getStreak('study');
+      const el = document.getElementById('sidebar-streak');
+      if (el) el.textContent = `🔥 ${streak?.count || 0} day streak`;
+    }
+
+    document.getElementById('saveAllSettings').addEventListener('click', async () => {
+      const profile = {
+        name: document.getElementById('sName').value.trim(),
+        college: document.getElementById('sCollege').value.trim(),
+        semester: document.getElementById('sSemester').value,
+        apiKey: document.getElementById('sApiKey').value.trim(),
+        studyGoal: parseInt(document.getElementById('sStudyGoal').value) || 6,
+        mobileLimit: parseInt(document.getElementById('sMobileLimit').value) || 2,
+        gradYear: parseInt(document.getElementById('sGradYear').value) || 2026,
+        ecetDate: document.getElementById('sEcetDate').value,
+        ecetScore: document.getElementById('sEcetScore').value,
+        weakTopics: document.getElementById('sWeakTopics').value,
+        updatedAt: Date.now()
+      };
+
+      await DB.saveProfile(profile);
+      localStorage.setItem('studyos_profile', JSON.stringify(profile));
+      Notify.show('Settings saved!', 'success');
+    });
+
+    document.getElementById('testApiBtn').addEventListener('click', async () => {
+      const key = document.getElementById('sApiKey').value.trim();
+      const result = document.getElementById('apiTestResult');
+
+      if (!key) { result.textContent = '❌ No key entered'; result.style.color = '#ef4444'; return; }
+
+      result.textContent = 'Testing...'; result.style.color = '#94a3b8';
+      localStorage.setItem('studyos_profile', JSON.stringify({ apiKey: key }));
+
+      const test = await AI.generate('Say "OK" in exactly one word.');
+      if (test) {
+        result.textContent = '✅ API key works!'; result.style.color = '#10b981';
+      } else {
+        result.textContent = '❌ Invalid or quota exceeded'; result.style.color = '#ef4444';
+      }
+    });
+
+    document.getElementById('exportDataBtn').addEventListener('click', async () => {
+      const activities = await DB.getAll(DB.STORES.ACTIVITIES);
+      const tasks = await DB.getAll(DB.STORES.TASKS);
+      const goals = await DB.getAll(DB.STORES.GOALS);
+      const subjects = await DB.getSubjects();
+
+      const data = { activities, tasks, goals, subjects, exportedAt: new Date().toISOString() };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `studyos_export_${DB.today()}.json`;
+      a.click(); URL.revokeObjectURL(url);
+      Notify.show('Data exported!', 'success');
+    });
+
+    document.getElementById('clearDataBtn').addEventListener('click', () => {
+      if (confirm('⚠️ This will delete ALL your data permanently. Are you sure?')) {
+        indexedDB.deleteDatabase('StudyOSDB');
+        localStorage.clear();
+        Notify.show('All data cleared. Reloading...', 'warning');
+        setTimeout(() => location.href = 'index.html', 1500);
+      }
+    });
+
+    document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+      document.getElementById('sidebar').classList.toggle('open');
+    });
+
+    loadSettings();
+  </script>
+</body>
+</html>
