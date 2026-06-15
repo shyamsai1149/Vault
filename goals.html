@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyOS — Goals & Tasks</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link href="[fonts.googleapis.com](https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap)" rel="stylesheet" />
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span class="logo-icon">🧠</span><span class="logo-text">StudyOS</span></div>
+    <nav class="sidebar-nav">
+      <a href="index.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Dashboard</span></a>
+      <a href="study.html" class="nav-item"><span class="nav-icon">📚</span><span class="nav-label">Study Tracker</span></a>
+      <a href="goals.html" class="nav-item active"><span class="nav-icon">🎯</span><span class="nav-label">Goals & Tasks</span></a>
+      <a href="reports.html" class="nav-item"><span class="nav-icon">📊</span><span class="nav-label">Reports</span></a>
+      <a href="settings.html" class="nav-item"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></a>
+    </nav>
+    <div class="sidebar-footer"><div class="streak-badge"><span id="sidebar-streak">🔥 0 day streak</span></div></div>
+  </aside>
+  <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+
+  <main class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="page-title">Goals & Tasks</h1>
+        <p class="page-subtitle">Daily, weekly, and monthly goal tracking</p>
+      </div>
+      <div class="topbar-right">
+        <button class="btn-ai-plan" id="addGoalBtn">+ Add Goal</button>
+      </div>
+    </header>
+
+    <!-- Filter Tabs -->
+    <div class="goals-filter">
+      <button class="filter-btn active" data-filter="daily">📅 Daily</button>
+      <button class="filter-btn" data-filter="weekly">📆 Weekly</button>
+      <button class="filter-btn" data-filter="monthly">🗓️ Monthly</button>
+      <button class="filter-btn" data-filter="placement">💼 Placement</button>
+      <button class="filter-btn" data-filter="ecet">📐 ECET</button>
+    </div>
+
+    <!-- Goals Progress Summary -->
+    <div class="stats-grid" style="margin-bottom:20px">
+      <div class="stat-card gradient-blue">
+        <div class="stat-icon">🎯</div>
+        <div class="stat-info">
+          <p class="stat-label">Total Goals</p>
+          <h2 class="stat-value" id="totalGoals">0</h2>
+        </div>
+      </div>
+      <div class="stat-card gradient-green">
+        <div class="stat-icon">✅</div>
+        <div class="stat-info">
+          <p class="stat-label">Completed</p>
+          <h2 class="stat-value" id="completedGoals">0</h2>
+        </div>
+      </div>
+      <div class="stat-card gradient-orange">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-info">
+          <p class="stat-label">In Progress</p>
+          <h2 class="stat-value" id="inProgressGoals">0</h2>
+        </div>
+      </div>
+      <div class="stat-card gradient-purple">
+        <div class="stat-icon">📈</div>
+        <div class="stat-info">
+          <p class="stat-label">Completion Rate</p>
+          <h2 class="stat-value" id="goalCompletionRate">0%</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- Goals List -->
+    <div id="goalsList"></div>
+
+    <!-- Placement Roadmap -->
+    <div class="card" style="margin-top:24px">
+      <div class="card-header"><h3>💼 Placement Preparation Roadmap</h3></div>
+      <div id="placementRoadmap"></div>
+    </div>
+  </main>
+
+  <!-- Add Goal Modal -->
+  <div class="modal-overlay" id="goalModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Add New Goal</h3>
+        <button class="modal-close" id="closeGoalModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Goal Title</label>
+          <input type="text" id="goalTitle" class="input-field" placeholder="e.g. Complete Java Collections module" />
+        </div>
+        <div class="form-group">
+          <label>Goal Type</label>
+          <select id="goalType" class="input-field">
+            <option value="daily">📅 Daily</option>
+            <option value="weekly">📆 Weekly</option>
+            <option value="monthly">🗓️ Monthly</option>
+            <option value="placement">💼 Placement</option>
+            <option value="ecet">📐 ECET</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Target Date</label>
+          <input type="date" id="goalDate" class="input-field" />
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="goalDesc" class="input-field" rows="3" placeholder="Describe your goal..." style="resize:vertical"></textarea>
+        </div>
+        <button class="btn-primary full-width" id="saveGoalBtn">Save Goal</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/db.js"></script>
+  <script src="assets/js/ai.js"></script>
+  <script src="assets/js/notifications.js"></script>
+  <script>
+    Notify.init();
+    let allGoals = [];
+    let currentFilter = 'daily';
+
+    const PLACEMENT_ROADMAP = [
+      { phase: 'Foundation (Month 1)', tasks: ['Complete Java basics + OOP', 'SQL fundamentals + 50 queries', 'Arrays & Strings in DSA', 'Aptitude: Number system, Percentages'], done: false },
+      { phase: 'Intermediate (Month 2)', tasks: ['Java Collections Framework', 'Linked List, Stack, Queue DSA', 'SQL: Joins, Subqueries, Procedures', 'Logical Reasoning practice'], done: false },
+      { phase: 'Advanced (Month 3)', tasks: ['Trees, Graphs, Dynamic Programming', 'Java Multithreading + Exceptions', 'System Design basics', 'Mock interviews + HR prep'], done: false },
+      { phase: 'Final Sprint', tasks: ['LeetCode 50 must-solve problems', 'Company-specific question sets', 'Resume + LinkedIn optimization', 'Mock placement drives'], done: false }
+    ];
+
+    async function loadGoals() {
+      allGoals = await DB.getAll(DB.STORES.GOALS);
+      updateStats();
+      renderGoals();
+    }
+
+    function updateStats() {
+      document.getElementById('totalGoals').textContent = allGoals.length;
+      const completed = allGoals.filter(g => g.completed).length;
+      document.getElementById('completedGoals').textContent = completed;
+      document.getElementById('inProgressGoals').textContent = allGoals.length - completed;
+      const rate = allGoals.length > 0 ? Math.round((completed / allGoals.length) * 100) : 0;
+      document.getElementById('goalCompletionRate').textContent = `${rate}%`;
+    }
+
+    function renderGoals() {
+      const container = document.getElementById('goalsList');
+      const filtered = currentFilter === 'all' ? allGoals : allGoals.filter(g => g.type === currentFilter);
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<p class="empty-text">No ${currentFilter} goals yet. Add one! 🎯</p>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(goal => `
+        <div class="goal-card">
+          <div class="goal-header">
+            <div>
+              <div class="goal-title ${goal.completed ? 'completed' : ''}" style="${goal.completed ? 'text-decoration:line-through;opacity:0.6' : ''}">${goal.title}</div>
+              ${goal.description ? `<p style="font-size:12px;color:#64748b;margin-top:4px">${goal.description}</p>` : ''}
+              ${goal.targetDate ? `<p style="font-size:11px;color:#94a3b8;margin-top:3px">📅 Due: ${goal.targetDate}</p>` : ''}
+            </div>
+            <div class="goal-actions">
+              <span class="task-cat ${goal.type}" style="padding:3px 10px;font-size:11px">${goal.type.toUpperCase()}</span>
+              <button class="btn-sm" onclick="toggleGoal(${goal.id})">${goal.completed ? '↩ Undo' : '✓ Done'}</button>
+              <button class="btn-sm" onclick="deleteGoal(${goal.id})" style="color:#ef4444">✕</button>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
+    function renderPlacementRoadmap() {
+      const container = document.getElementById('placementRoadmap');
+      container.innerHTML = PLACEMENT_ROADMAP.map((phase, i) => `
+        <div style="margin-bottom:16px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <div style="width:28px;height:28px;border-radius:50%;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px">${i + 1}</div>
+            <strong style="font-size:14px">${phase.phase}</strong>
+          </div>
+          <div style="margin-left:38px;display:flex;flex-direction:column;gap:4px">
+            ${phase.tasks.map(task => `
+              <div style="font-size:12px;color:#94a3b8;padding:5px 10px;background:#111827;border-radius:6px">
+                ▸ ${task}
+              </div>`).join('')}
+          </div>
+        </div>`).join('');
+    }
+
+    async function addGoal() {
+      const title = document.getElementById('goalTitle').value.trim();
+      if (!title) { Notify.show('Enter a goal title', 'error'); return; }
+
+      const goal = {
+        title,
+        type: document.getElementById('goalType').value,
+        targetDate: document.getElementById('goalDate').value,
+        description: document.getElementById('goalDesc').value.trim(),
+        completed: false,
+        createdAt: Date.now()
+      };
+
+      await DB.add(DB.STORES.GOALS, goal);
+      document.getElementById('goalModal').classList.remove('open');
+      document.getElementById('goalTitle').value = '';
+      document.getElementById('goalDesc').value = '';
+      await loadGoals();
+      Notify.show('Goal added!', 'success');
+    }
+
+    async function toggleGoal(id) {
+      const goal = allGoals.find(g => g.id === id);
+      if (!goal) return;
+      goal.completed = !goal.completed;
+      await DB.put(DB.STORES.GOALS, goal);
+      await loadGoals();
+    }
+
+    async function deleteGoal(id) {
+      await DB.del(DB.STORES.GOALS, id);
+      await loadGoals();
+    }
+
+    // Filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        renderGoals();
+      });
+    });
+
+    document.getElementById('addGoalBtn').addEventListener('click', () => {
+      document.getElementById('goalModal').classList.add('open');
+    });
+    document.getElementById('closeGoalModal').addEventListener('click', () => {
+      document.getElementById('goalModal').classList.remove('open');
+    });
+    document.getElementById('saveGoalBtn').addEventListener('click', addGoal);
+    document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+      document.getElementById('sidebar').classList.toggle('open');
+    });
+
+    // Set default date
+    document.getElementById('goalDate').value = DB.today();
+
+    DB.open().then(() => { loadGoals(); renderPlacementRoadmap(); });
+  </script>
+</body>
+</html>
