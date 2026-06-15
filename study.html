@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyOS — Study Tracker</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link href="[fonts.googleapis.com](https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap)" rel="stylesheet" />
+  <script src="[cdn.jsdelivr.net](https://cdn.jsdelivr.net/npm/chart.js)"></script>
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">🧠</span><span class="logo-text">StudyOS</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="index.html" class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Dashboard</span></a>
+      <a href="study.html" class="nav-item active"><span class="nav-icon">📚</span><span class="nav-label">Study Tracker</span></a>
+      <a href="goals.html" class="nav-item"><span class="nav-icon">🎯</span><span class="nav-label">Goals & Tasks</span></a>
+      <a href="reports.html" class="nav-item"><span class="nav-icon">📊</span><span class="nav-label">Reports</span></a>
+      <a href="settings.html" class="nav-item"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="streak-badge"><span id="sidebar-streak">🔥 0 day streak</span></div>
+    </div>
+  </aside>
+  <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+
+  <main class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="page-title">Study Tracker</h1>
+        <p class="page-subtitle">Pomodoro timer + Session tracking</p>
+      </div>
+    </header>
+
+    <!-- Pomodoro Timer -->
+    <div class="timer-card">
+      <p class="timer-session" id="timerMode">🍅 Pomodoro Session</p>
+      <div class="timer-display" id="timerDisplay">25:00</div>
+      <div class="timer-controls">
+        <button class="btn-timer start" id="startBtn">▶ Start</button>
+        <button class="btn-timer" id="pauseBtn" disabled>⏸ Pause</button>
+        <button class="btn-timer stop" id="resetBtn">⏹ Reset</button>
+      </div>
+      <div class="pomodoro-info">
+        <div class="pomodoro-stat"><div class="val" id="pomodoroCount">0</div><div class="lbl">Pomodoros</div></div>
+        <div class="pomodoro-stat"><div class="val" id="sessionTotal">0m</div><div class="lbl">Session Total</div></div>
+        <div class="pomodoro-stat"><div class="val" id="breaksTaken">0</div><div class="lbl">Breaks</div></div>
+      </div>
+      <div style="margin-top:16px">
+        <div class="form-group">
+          <label>Current Subject</label>
+          <select id="currentSubject" class="input-field">
+            <option value="Java">☕ Java</option>
+            <option value="DSA">🌳 DSA</option>
+            <option value="SQL">🗄️ SQL</option>
+            <option value="Aptitude">🧮 Aptitude</option>
+            <option value="English">📝 English</option>
+            <option value="Project">💻 Project</option>
+            <option value="ECET">📐 ECET</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Session Mode Selector -->
+    <div class="two-col-grid">
+      <div class="card">
+        <div class="card-header"><h3>⏱️ Timer Settings</h3></div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="form-group">
+            <label>Pomodoro Duration (minutes)</label>
+            <input type="number" id="pomoDuration" class="input-field" value="25" min="5" max="60" />
+          </div>
+          <div class="form-group">
+            <label>Short Break (minutes)</label>
+            <input type="number" id="shortBreak" class="input-field" value="5" min="1" max="15" />
+          </div>
+          <div class="form-group">
+            <label>Long Break (minutes)</label>
+            <input type="number" id="longBreak" class="input-field" value="15" min="5" max="30" />
+          </div>
+          <button class="btn-primary" id="applyTimerSettings">Apply Settings</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3>📋 Today's Study Topics</h3></div>
+        <div id="topicsList" style="display:flex;flex-direction:column;gap:8px">
+          <!-- Loaded by JS -->
+        </div>
+        <button class="btn-sm" style="margin-top:12px" id="getAITopicsBtn">✨ Get AI Topics</button>
+      </div>
+    </div>
+
+    <!-- Subject Breakdown Chart -->
+    <div class="card" style="margin-bottom:24px">
+      <div class="card-header"><h3>📊 Today's Subject Breakdown</h3></div>
+      <canvas id="subjectBreakdown" height="150"></canvas>
+    </div>
+
+    <!-- Study Log Table -->
+    <div class="card">
+      <div class="card-header">
+        <h3>📝 Study Log</h3>
+        <span id="totalStudyToday" class="badge badge-live">0m total</span>
+      </div>
+      <div id="studyLogTable" style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead>
+            <tr style="color:#64748b;border-bottom:1px solid #2a3550">
+              <th style="text-align:left;padding:8px">Time</th>
+              <th style="text-align:left;padding:8px">Subject</th>
+              <th style="text-align:left;padding:8px">Duration</th>
+              <th style="text-align:left;padding:8px">Note</th>
+            </tr>
+          </thead>
+          <tbody id="studyLogBody">
+            <tr><td colspan="4" style="text-align:center;padding:20px;color:#64748b">No study sessions yet today</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script src="assets/js/db.js"></script>
+  <script src="assets/js/ai.js"></script>
+  <script src="assets/js/charts.js"></script>
+  <script src="assets/js/notifications.js"></script>
+  <script>
+    // Study page specific logic
+    Notify.init();
+    let timerInterval = null;
+    let timerSeconds = 0;
+    let pomodoroCount = 0;
+    let breaksTaken = 0;
+    let sessionMins = 0;
+    let isRunning = false;
+    let isBreak = false;
+    let POMODORO_SECS = 25 * 60;
+    let SHORT_BREAK_SECS = 5 * 60;
+    let LONG_BREAK_SECS = 15 * 60;
+
+    timerSeconds = POMODORO_SECS;
+    updateDisplay();
+
+    function updateDisplay() {
+      const m = Math.floor(timerSeconds / 60);
+      const s = timerSeconds % 60;
+      document.getElementById('timerDisplay').textContent =
+        `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+
+    document.getElementById('startBtn').addEventListener('click', () => {
+      if (isRunning) return;
+      isRunning = true;
+      document.getElementById('startBtn').disabled = true;
+      document.getElementById('pauseBtn').disabled = false;
+
+      timerInterval = setInterval(async () => {
+        timerSeconds--;
+        updateDisplay();
+
+        if (timerSeconds <= 0) {
+          clearInterval(timerInterval);
+          isRunning = false;
+
+          if (!isBreak) {
+            // Session complete
+            pomodoroCount++;
+            sessionMins += parseInt(document.getElementById('pomoDuration').value);
+            document.getElementById('pomodoroCount').textContent = pomodoroCount;
+            document.getElementById('sessionTotal').textContent = `${sessionMins}m`;
+
+            // Log to DB
+            const subject = document.getElementById('currentSubject').value;
+            const duration = parseInt(document.getElementById('pomoDuration').value);
+            await DB.add(DB.STORES.ACTIVITIES, {
+              type: 'study', duration, note: subject,
+              date: DB.today(), timestamp: Date.now()
+            });
+
+            Notify.show(`🍅 Pomodoro complete! ${subject} session logged.`, 'success', 5000);
+            Notify.push('Pomodoro Complete!', `Great work on ${subject}! Take a break.`);
+
+            // Start break
+            isBreak = true;
+            const breakSecs = pomodoroCount % 4 === 0 ? LONG_BREAK_SECS : SHORT_BREAK_SECS;
+            timerSeconds = breakSecs;
+            document.getElementById('timerMode').textContent = '☕ Break Time!';
+            loadStudyLog();
+          } else {
+            // Break complete
+            breaksTaken++;
+            document.getElementById('breaksTaken').textContent = breaksTaken;
+            isBreak = false;
+            timerSeconds = POMODORO_SECS;
+            document.getElementById('timerMode').textContent = '🍅 Pomodoro Session';
+            Notify.show('Break over! Ready for the next session?', 'info');
+          }
+
+          document.getElementById('startBtn').disabled = false;
+          document.getElementById('pauseBtn').disabled = true;
+          updateDisplay();
+        }
+      }, 1000);
+    });
+
+    document.getElementById('pauseBtn').addEventListener('click', () => {
+      clearInterval(timerInterval);
+      isRunning = false;
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('pauseBtn').disabled = true;
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      clearInterval(timerInterval);
+      isRunning = false; isBreak = false;
+      timerSeconds = POMODORO_SECS;
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('pauseBtn').disabled = true;
+      document.getElementById('timerMode').textContent = '🍅 Pomodoro Session';
+      updateDisplay();
+    });
+
+    document.getElementById('applyTimerSettings').addEventListener('click', () => {
+      POMODORO_SECS = parseInt(document.getElementById('pomoDuration').value) * 60;
+      SHORT_BREAK_SECS = parseInt(document.getElementById('shortBreak').value) * 60;
+      LONG_BREAK_SECS = parseInt(document.getElementById('longBreak').value) * 60;
+      if (!isRunning) { timerSeconds = POMODORO_SECS; updateDisplay(); }
+      Notify.show('Timer settings applied!', 'success');
+    });
+
+    document.getElementById('getAITopicsBtn').addEventListener('click', async () => {
+      const subject = document.getElementById('currentSubject').value;
+      const list = document.getElementById('topicsList');
+      list.innerHTML = '<p style="color:#64748b;font-size:13px">Loading AI suggestions...</p>';
+
+      const profile = JSON.parse(localStorage.getItem('studyos_profile') || '{}');
+      const subjects = await DB.getSubjects();
+      const subj = subjects.find(s => s.name === subject);
+      const progress = subj?.progress || 0;
+
+      const topics = await AI.getPlacementTopics(subject, progress);
+      if (topics) {
+        list.innerHTML = topics.split('\n').filter(l => l.trim()).map(line =>
+          `<div style="padding:8px 10px;background:#111827;border-radius:6px;font-size:12px;border-left:3px solid #3b82f6">${line}</div>`
+        ).join('');
+      } else {
+        list.innerHTML = '<p style="color:#64748b;font-size:13px">Add your Gemini API key in Settings for AI topics.</p>';
+      }
+    });
+
+    async function loadStudyLog() {
+      const activities = await DB.getTodayActivities();
+      const studyActs = activities.filter(a => a.type === 'study' || a.type === 'project');
+      const totalMins = studyActs.reduce((sum, a) => sum + a.duration, 0);
+
+      document.getElementById('totalStudyToday').textContent = `${totalMins}m total`;
+
+      const tbody = document.getElementById('studyLogBody');
+      if (studyActs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#64748b">No study sessions yet</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = [...studyActs].reverse().map(a => {
+        const t = new Date(a.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        return `<tr style="border-bottom:1px solid #2a3550">
+          <td style="padding:10px 8px;color:#64748b">${t}</td>
+          <td style="padding:10px 8px;font-weight:500">${a.note || a.type}</td>
+          <td style="padding:10px 8px;color:#3b82f6">${a.duration}m</td>
+          <td style="padding:10px 8px;color:#64748b">${a.type}</td>
+        </tr>`;
+      }).join('');
+
+      // Subject breakdown chart
+      const subjectTotals = {};
+      studyActs.forEach(a => {
+        const key = a.note || 'General';
+        subjectTotals[key] = (subjectTotals[key] || 0) + a.duration;
+      });
+
+      const ctx = document.getElementById('subjectBreakdown');
+      if (ctx && Object.keys(subjectTotals).length > 0) {
+        Charts.renderDonutChart('subjectBreakdown', subjectTotals);
+      }
+    }
+
+    // Mobile menu
+    document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+      document.getElementById('sidebar').classList.toggle('open');
+    });
+
+    // Load streak
+    async function loadStreak() {
+      const s = await DB.getStreak('study');
+      const el = document.getElementById('sidebar-streak');
+      if (el) el.textContent = `🔥 ${s?.count || 0} day streak`;
+    }
+
+    DB.open().then(() => { loadStudyLog(); loadStreak(); });
+  </script>
+</body>
+</html>
